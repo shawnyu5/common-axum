@@ -1,0 +1,20 @@
+[package]
+name = "common-axum"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.94"
+axum = "0.7.9"
+serde = { version = "1.0.215", features = ["derive"] }
+simd-json = "0.14.3"
+tokio = { version = "1.42.0", features = ["full"] }
+toml = "0.8.19"
+tower = "0.5.1"
+tower-http = { version = "0.6.2", features = ["cors", "trace"] }
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3.19", features = [
+   "env-filter",
+   "std",
+   "fmt",
+] }
