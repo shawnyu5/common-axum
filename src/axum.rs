@@ -6,6 +6,7 @@ use axum::{
 };
 use serde::{Deserialize, Serialize};
 use tokio::{fs::File, io::AsyncReadExt, net::TcpListener, signal};
+use tower::ServiceBuilder;
 use tower_http::{
     cors::{Any, CorsLayer},
     trace::{self, TraceLayer},
@@ -39,6 +40,7 @@ where
 }
 
 /// Create a default axum router with Cors and tracing middleware
+#[deprecated = "Default router will now return a `axum::Router::new()`. Previously, it would incorrectly attach cors and tracing middleware, which do no do anything..."]
 pub fn default_router() -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
@@ -49,10 +51,7 @@ pub fn default_router() -> Router {
         .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
         .on_response(trace::DefaultOnResponse::new().level(Level::INFO));
 
-    return Router::new()
-        // .route("/", get(app_version))
-        .layer(tracing)
-        .layer(cors);
+    return Router::new().layer(tracing).layer(cors);
 }
 
 /// Initializes tracing subscriber with format and env filter layer
@@ -85,7 +84,8 @@ pub fn attach_tracing_cors_middleware(router: Router) -> Router {
         .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
         .on_response(trace::DefaultOnResponse::new().level(Level::INFO));
 
-    return router.layer(tracing).layer(cors);
+    return router.layer(ServiceBuilder::new().layer(tracing).layer(cors));
+    // return router.layer(tracing).layer(cors);
 }
 
 #[derive(Serialize, Deserialize, Clone)]
