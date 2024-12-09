@@ -1,4 +1,6 @@
-use anyhow::Result;
+use std::io::Write;
+
+use anyhow::{Context, Result};
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -14,6 +16,7 @@ use tower_http::{
 use tracing::Level;
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{fmt, EnvFilter};
+use utoipa::{OpenApi, ToSchema};
 
 #[derive(Debug)]
 pub struct AppError(pub anyhow::Error);
@@ -88,11 +91,19 @@ pub fn attach_tracing_cors_middleware(router: Router) -> Router {
     // return router.layer(tracing).layer(cors);
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, ToSchema)]
 pub struct HomeResponse {
     pub version: String,
 }
 
+#[utoipa::path(
+    get,
+    path = "/",
+    responses(
+        (status = 200, description = "Version of the server", body = HomeResponse),
+        (status = 500, description = "Failed to get the vesion of the server", body = String),
+    )
+)]
 pub async fn app_version() -> Result<Json<HomeResponse>, AppError> {
     /// Simplified `Cargo.toml` structure
     #[derive(Deserialize)]
@@ -153,4 +164,18 @@ async fn shutdown_signal() {
             println!("terminate handler")
         },
     }
+}
+
+/// Generates an Open API spec
+///
+/// * `file_path`: the file location to save the API spec
+pub fn generate_open_api_spec<T: OpenApi>(file_path: &str) -> Result<()> {
+    let api_doc = T::openapi()
+        .to_pretty_json()
+        .context("Failed to generate open API spec")?;
+    let mut file =
+        std::fs::File::create(file_path).context("Failed to create open API spec file")?;
+    file.write_all(api_doc.as_bytes())
+        .context("Failed to write open api spec to file")?;
+    return Ok(());
 }
