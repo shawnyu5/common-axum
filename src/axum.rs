@@ -128,10 +128,15 @@ pub async fn app_version() -> Result<Json<HomeResponse>, app_error_v2::AppError>
         pub version: String,
     }
 
-    let mut file = File::open("Cargo.toml").await?;
+    let mut file = File::open("Cargo.toml")
+        .await
+        .context("Failed to open Cargo.toml")?;
     let mut file_contents: String = Default::default();
-    file.read_to_string(&mut file_contents).await?;
-    let cargo_toml = toml::from_str::<CargoToml>(file_contents.as_str())?;
+    file.read_to_string(&mut file_contents)
+        .await
+        .context("Failed to read Cargo.toml")?;
+    let cargo_toml = toml::from_str::<CargoToml>(file_contents.as_str())
+        .context("Failed to parse Cargo.toml")?;
 
     return Ok(Json(HomeResponse {
         version: cargo_toml.package.version,
@@ -182,6 +187,21 @@ async fn shutdown_signal() {
 /// * `file_path`: the file location to save the API spec
 pub fn generate_open_api_spec<T: OpenApi>(file_path: &str) -> Result<()> {
     let api_doc = T::openapi()
+        .to_pretty_json()
+        .context("Failed to generate open API spec")?;
+    let mut file =
+        std::fs::File::create(file_path).context("Failed to create open API spec file")?;
+    file.write_all(api_doc.as_bytes())
+        .context("Failed to write open api spec to file")?;
+    return Ok(());
+}
+
+/// Generate open API spec from an open API object
+pub fn generate_open_api_spec_from_open_api(
+    open_api: utoipa::openapi::OpenApi,
+    file_path: &str,
+) -> Result<()> {
+    let api_doc = open_api
         .to_pretty_json()
         .context("Failed to generate open API spec")?;
     let mut file =
