@@ -47,7 +47,10 @@ where
 pub fn default_router() -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_headers([axum::http::header::CONTENT_TYPE])
+        .allow_headers([
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::AUTHORIZATION,
+        ])
         .allow_methods([axum::http::Method::GET, axum::http::Method::POST]);
 
     let tracing = TraceLayer::new_for_http()
@@ -76,7 +79,10 @@ pub fn init_tracing_subcriber() -> Result<()> {
 pub fn attach_tracing_cors_middleware(router: Router) -> Router {
     let cors = CorsLayer::new()
         .allow_origin(Any)
-        .allow_headers([axum::http::header::CONTENT_TYPE])
+        .allow_headers([
+            axum::http::header::CONTENT_TYPE,
+            axum::http::header::AUTHORIZATION,
+        ])
         .allow_methods([
             axum::http::Method::GET,
             axum::http::Method::POST,
