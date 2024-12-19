@@ -18,7 +18,10 @@ use tracing_subscriber::prelude::*;
 use tracing_subscriber::{fmt, EnvFilter};
 use utoipa::{OpenApi, ToSchema};
 
+use crate::app_error_v2;
+
 #[derive(Debug)]
+#[deprecated = "Use app_error_v2::AppError for a more flexible app error interface"]
 pub struct AppError(pub anyhow::Error);
 
 // Tell axum how to convert `AppError` into a response.
@@ -110,7 +113,7 @@ pub struct HomeResponse {
         (status = 500, description = "Failed to get the vesion of the server", body = String),
     )
 )]
-pub async fn app_version() -> Result<Json<HomeResponse>, AppError> {
+pub async fn app_version() -> Result<Json<HomeResponse>, app_error_v2::AppError> {
     /// Simplified `Cargo.toml` structure
     #[derive(Deserialize)]
     struct CargoToml {
