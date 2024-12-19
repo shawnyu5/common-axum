@@ -85,7 +85,6 @@ pub fn attach_tracing_cors_middleware(router: Router) -> Router {
         .allow_headers([
             axum::http::header::CONTENT_TYPE,
             axum::http::header::AUTHORIZATION,
-            axum::http::header::ACCESS_CONTROL_ALLOW_ORIGIN,
         ])
         .allow_methods([
             axum::http::Method::GET,
