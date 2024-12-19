@@ -25,6 +25,7 @@ use crate::app_error_v2;
 pub struct AppError(pub anyhow::Error);
 
 // Tell axum how to convert `AppError` into a response.
+#[allow(deprecated)]
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         (
@@ -36,6 +37,7 @@ impl IntoResponse for AppError {
 }
 // This enables using `?` on functions that return `Result<_, anyhow::Error>` to turn them into
 // `Result<_, AppError>`. That way you don't need to do that manually.
+#[allow(deprecated)]
 impl<E> From<E> for AppError
 where
     E: Into<anyhow::Error>,
